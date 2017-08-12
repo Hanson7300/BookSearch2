@@ -31,7 +31,6 @@ public class BookAdapter extends ArrayAdapter<Book> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.single_book, parent, false);
         }
 
-
         //找到当前需要填充位置的 Book class数据
         Book currentBook = getItem(position);
 

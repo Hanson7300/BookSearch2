@@ -1,11 +1,15 @@
 package com.example.android.booksearch;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,6 +32,7 @@ public class SearchResult extends AppCompatActivity {
 
     public String targetUrl;
     public ListView listView;
+    private BookAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,17 +46,41 @@ public class SearchResult extends AppCompatActivity {
         //取得目标HTTP地址
         targetUrl = DOUBAN + keyWord;
 
+        //附着adapter
+        listView = (ListView) findViewById(R.id.list);
+        mAdapter = new BookAdapter(SearchResult.this, new ArrayList<Book>());
+        listView.setAdapter(mAdapter);
+
+        //无数据时显示默认TextView
+        TextView empty = (TextView) findViewById(R.id.empty);
+        listView.setEmptyView(empty);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Book currentBook = mAdapter.getItem(position);
+                Uri webUri = Uri.parse(currentBook.getUrl());
+                Intent webIntent = new Intent(Intent.ACTION_VIEW,webUri);
+                startActivity(webIntent);
+            }
+        });
+
+
         BookAsyncTask task = new BookAsyncTask();
-        task.execute();
+        try {
+            task.execute(new URL(targetUrl));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     private class BookAsyncTask extends AsyncTask<URL, Void, ArrayList<Book>> {
         @Override
-        protected void onPostExecute(ArrayList<Book> books) {
-            listView = (ListView) findViewById(R.id.list);
-            BookAdapter adapter = new BookAdapter(SearchResult.this, books);
-            listView.setAdapter(adapter);
-
+        protected void onPostExecute(ArrayList<Book> data) {
+            mAdapter.clear();
+            if (data != null && !data.isEmpty()) {
+                mAdapter.addAll(data);
+            }
         }
 
         //后台工作 根据url 返回数据
@@ -162,9 +191,11 @@ public class SearchResult extends AppCompatActivity {
                         String publisherString = singleBook.optString("publisher");
                         //提取书名
                         String titleString = singleBook.optString("title");
+                        //提取网页URL
+                        String webUrl = singleBook.optString("alt");
 
                         //添加到Book 列表中,返回ArrayList
-                        Book singlebook = new Book(titleString, rateString, authorString.toString(), publisherString, imageUrl);
+                        Book singlebook = new Book(titleString, rateString, authorString.toString(), publisherString, imageUrl,webUrl);
                         finalArrarlist.add(singlebook);
                     }
                 }

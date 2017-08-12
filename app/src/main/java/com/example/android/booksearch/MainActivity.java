@@ -27,12 +27,12 @@ public class MainActivity extends AppCompatActivity {
         search_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //点击搜索按钮,传入关键词
+                //点击搜索按钮时传入关键词
                 String keyWord = edit_text.getText().toString();
                 if(keyWord.length()>15){
                     keyWord.substring(0,15);
                 }
-                //如果没有输入,显示Toast
+                //如果没有输入关键词,显示Toast
                 if (keyWord.matches("")) {
                     Toast.makeText(MainActivity.this, R.string.wrong_hint,Toast.LENGTH_SHORT).show();
                     return;
@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
                     Intent searchResultIntent = new Intent(MainActivity.this, SearchResult.class);
                     searchResultIntent.putExtra("keyWord", keyWord);
                     startActivity(searchResultIntent);
-
                 }
             }
         });
